@@ -4,10 +4,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torchvision import datasets, transforms
 from scipy.ndimage.interpolation import rotate as scipyrotate
 from networks import MLP, ConvNet, LeNet, AlexNet, AlexNetBN, VGG11, VGG11BN, ResNet18, ResNet18BN_AP, ResNet18BN
+from PIL import Image
+
 
 def get_dataset(dataset, data_path):
     if dataset == 'MNIST':
@@ -93,14 +95,57 @@ def get_dataset(dataset, data_path):
 
         dst_test = TensorDataset(images_val, labels_val)  # no augmentation
 
+    elif dataset == 'ImageNette':
+        channel = 3
+        im_size = (64, 64)
+        num_classes = 10
+        mean = [0.485, 0.456, 0.406]
+        std = [0.229, 0.224, 0.225]
+        transform = transforms.Compose([
+            transforms.Resize(im_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=mean, std=std)
+        ])
+
+        dst_train = ImagenetteDataset(data_path, split='train', transform=transform)
+        dst_test = ImagenetteDataset(data_path, split='val', transform=transform)
+        class_names = dst_train.classes
+
     else:
         exit('unknown dataset: %s'%dataset)
-
 
     testloader = torch.utils.data.DataLoader(dst_test, batch_size=256, shuffle=False, num_workers=0)
     return channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader
 
 
+class ImagenetteDataset(Dataset):
+    def __init__(self, root_dir, split='train', transform=None):
+        self.root_dir = os.path.join(root_dir, split)
+        self.transform = transform
+        self.images = []
+        self.labels = []
+        self.classes = []
+
+        for label, class_name in enumerate(sorted(os.listdir(self.root_dir))):
+            class_dir = os.path.join(self.root_dir, class_name)
+            if os.path.isdir(class_dir):
+                self.classes.append(class_name)
+                for img_name in os.listdir(class_dir):
+                    self.images.append(os.path.join(class_dir, img_name))
+                    self.labels.append(label)
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        img_path = self.images[idx]
+        image = Image.open(img_path).convert('RGB')
+        label = self.labels[idx]
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
 
 class TensorDataset(Dataset):
     def __init__(self, images, labels): # images: n x c x h x w tensor
@@ -349,7 +394,7 @@ def evaluate_synset(it_eval, net, images_train, labels_train, testloader, args):
 
     start = time.time()
     for ep in range(Epoch+1):
-        loss_train, acc_train = epoch('train', trainloader, net, optimizer, criterion, args, aug = True)
+        loss_train, acc_train = epoch('train', trainloader, net, optimizer, criterion, args, aug=True)
         if ep in lr_schedule:
             lr *= 0.1
             optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)

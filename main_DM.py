@@ -46,15 +46,14 @@ def main():
     eval_it_pool = np.arange(0, args.Iteration+1, 2000).tolist() if args.eval_mode == 'S' or args.eval_mode == 'SS' else [args.Iteration] # The list of iterations when we evaluate models and record results.
     print('eval_it_pool: ', eval_it_pool)
     channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader = get_dataset(args.dataset, args.data_path)
+    print('channel = %d, im_size = %s, num_classes = %d, class_names = %s'%(channel, im_size, num_classes, class_names))
     model_eval_pool = get_eval_pool(args.eval_mode, args.model, args.model)
 
-
-    accs_all_exps = dict() # record performances of all experiments
+    accs_all_exps = dict()  # record performances of all experiments
     for key in model_eval_pool:
         accs_all_exps[key] = []
 
     data_save = []
-
 
     for exp in range(args.num_exp):
         print('\n================== Exp %d ==================\n '%exp)
@@ -73,12 +72,10 @@ def main():
         images_all = torch.cat(images_all, dim=0).to(args.device)
         labels_all = torch.tensor(labels_all, dtype=torch.long, device=args.device)
 
-
-
         for c in range(num_classes):
             print('class c = %d: %d real images'%(c, len(indices_class[c])))
 
-        def get_images(c, n): # get random n images from class c
+        def get_images(c, n):  # get random n images from class c
             idx_shuffle = np.random.permutation(indices_class[c])[:n]
             return images_all[idx_shuffle]
 
@@ -88,7 +85,7 @@ def main():
 
         ''' initialize the synthetic data '''
         image_syn = torch.randn(size=(num_classes*args.ipc, channel, im_size[0], im_size[1]), dtype=torch.float, requires_grad=True, device=args.device)
-        label_syn = torch.tensor([np.ones(args.ipc)*i for i in range(num_classes)], dtype=torch.long, requires_grad=False, device=args.device).view(-1) # [0,0,0, 1,1,1, ..., 9,9,9]
+        label_syn = torch.tensor([np.ones(args.ipc)*i for i in range(num_classes)], dtype=torch.long, requires_grad=False, device=args.device).view(-1)  # [0,0,0, 1,1,1, ..., 9,9,9]
 
         if args.init == 'real':
             print('initialize synthetic data from random real images')
@@ -131,7 +128,7 @@ def main():
                     image_syn_vis[:, ch] = image_syn_vis[:, ch]  * std[ch] + mean[ch]
                 image_syn_vis[image_syn_vis<0] = 0.0
                 image_syn_vis[image_syn_vis>1] = 1.0
-                save_image(image_syn_vis, save_name, nrow=args.ipc) # Trying normalize = True/False may get better visual effects.
+                save_image(image_syn_vis, save_name, nrow=args.ipc)  # Trying normalize = True/False may get better visual effects.
 
 
 
