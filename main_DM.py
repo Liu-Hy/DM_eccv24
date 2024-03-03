@@ -143,6 +143,7 @@ def main():
             loss_avg = 0
 
             ''' update synthetic data '''
+            iteration_start_time = time.time()
             if 'BN' not in args.model: # for ConvNet
                 loss = torch.tensor(0.0).to(args.device)
                 for c in range(num_classes):
@@ -183,15 +184,15 @@ def main():
 
                 loss += torch.sum((torch.mean(output_real.reshape(num_classes, args.batch_real, -1), dim=1) - torch.mean(output_syn.reshape(num_classes, args.ipc, -1), dim=1))**2)
 
-
-
             optimizer_img.zero_grad()
             loss.backward()
             optimizer_img.step()
             loss_avg += loss.item()
+            loss_avg /= num_classes
 
-
-            loss_avg /= (num_classes)
+            iteration_end_time = time.time()
+            execution_time = iteration_end_time - iteration_start_time
+            print(f"Execution time: {execution_time} seconds")
 
             if it%10 == 0:
                 print('%s iter = %05d, loss = %.4f' % (get_time(), it, loss_avg))
