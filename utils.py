@@ -69,7 +69,7 @@ def get_dataset(dataset, data_path):
 
     elif dataset == 'TinyImageNet':
         channel = 3
-        im_size = (64, 64)
+        im_size = (32, 32)
         num_classes = 200
         mean = [0.485, 0.456, 0.406]
         std = [0.229, 0.224, 0.225]
