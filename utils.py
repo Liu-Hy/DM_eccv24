@@ -73,27 +73,15 @@ def get_dataset(dataset, data_path):
         num_classes = 200
         mean = [0.485, 0.456, 0.406]
         std = [0.229, 0.224, 0.225]
-        data = torch.load(os.path.join(data_path, 'tinyimagenet.pt'), map_location='cpu')
+        transform = transforms.Compose([
+            transforms.Resize(im_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=mean, std=std)
+        ])
 
-        class_names = data['classes']
-
-        images_train = data['images_train']
-        labels_train = data['labels_train']
-        images_train = images_train.detach().float() / 255.0
-        labels_train = labels_train.detach()
-        for c in range(channel):
-            images_train[:,c] = (images_train[:,c] - mean[c])/std[c]
-        dst_train = TensorDataset(images_train, labels_train)  # no augmentation
-
-        images_val = data['images_val']
-        labels_val = data['labels_val']
-        images_val = images_val.detach().float() / 255.0
-        labels_val = labels_val.detach()
-
-        for c in range(channel):
-            images_val[:, c] = (images_val[:, c] - mean[c]) / std[c]
-
-        dst_test = TensorDataset(images_val, labels_val)  # no augmentation
+        dst_train = ImagenetDataset(os.path.join(data_path, 'tiny-imagenet'), split='train', transform=transform)
+        dst_test = ImagenetDataset(os.path.join(data_path, 'tiny-imagenet'), split='val', transform=transform)
+        class_names = dst_train.classes
 
     elif dataset == 'ImageNette':
         channel = 3
@@ -107,8 +95,8 @@ def get_dataset(dataset, data_path):
             transforms.Normalize(mean=mean, std=std)
         ])
 
-        dst_train = ImagenetteDataset(data_path, split='train', transform=transform)
-        dst_test = ImagenetteDataset(data_path, split='val', transform=transform)
+        dst_train = ImagenetDataset(os.path.join(data_path, 'imagenette'), split='train', transform=transform)
+        dst_test = ImagenetDataset(os.path.join(data_path, 'imagenette'), split='val', transform=transform)
         class_names = dst_train.classes
 
     else:
@@ -118,7 +106,7 @@ def get_dataset(dataset, data_path):
     return channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader
 
 
-class ImagenetteDataset(Dataset):
+class ImagenetDataset(Dataset):
     def __init__(self, root_dir, split='train', transform=None):
         self.root_dir = os.path.join(root_dir, split)
         self.transform = transform
