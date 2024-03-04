@@ -128,7 +128,7 @@ def main():
                 image_syn_vis[image_syn_vis>1] = 1.0
 
                 for c in range(num_classes):
-                    class_dir = os.path.join(args.save_path, 'it_{:05d}'.format(it), 'new{:03d}'.format(c))
+                    class_dir = os.path.join(args.save_path, 'ipc{:03d}_it_{:05d}'.format(args.ipc, it), 'new{:03d}'.format(c))
                     os.makedirs(class_dir, exist_ok=True)
 
                     for i in range(args.ipc):
