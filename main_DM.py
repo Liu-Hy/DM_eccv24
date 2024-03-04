@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--num_exp', type=int, default=5, help='the number of experiments')
     parser.add_argument('--num_eval', type=int, default=20, help='the number of evaluating randomly initialized models')
     parser.add_argument('--epoch_eval_train', type=int, default=1000, help='epochs to train a model with synthetic data') # it can be small for speeding up with little performance drop
-    parser.add_argument('--Iteration', type=int, default=20000, help='training iterations')
+    parser.add_argument('--Iteration', type=int, default=8000, help='training iterations')
     parser.add_argument('--lr_img', type=float, default=1.0, help='learning rate for updating synthetic images')
     parser.add_argument('--lr_net', type=float, default=0.01, help='learning rate for updating network parameters')
     parser.add_argument('--batch_real', type=int, default=256, help='batch size for real data')
@@ -128,7 +128,7 @@ def main():
                 image_syn_vis[image_syn_vis>1] = 1.0
 
                 for c in range(num_classes):
-                    class_dir = os.path.join(args.save_path, 'ipc{:03d}_it_{:05d}'.format(args.ipc, it), 'new{:03d}'.format(c))
+                    class_dir = os.path.join(args.save_path, '{}_ipc{:03d}_it{:05d}'.format(args.dataset, args.ipc, it), 'new{:03d}'.format(c))
                     os.makedirs(class_dir, exist_ok=True)
 
                     for i in range(args.ipc):
