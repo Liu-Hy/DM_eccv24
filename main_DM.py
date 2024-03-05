@@ -27,7 +27,7 @@ def main():
     parser.add_argument('--init', type=str, default='real', help='noise/real: initialize synthetic images from random noise or randomly sampled real images.')
     parser.add_argument('--dsa_strategy', type=str, default='color_crop_cutout_flip_scale_rotate', help='differentiable Siamese augmentation strategy')
     parser.add_argument('--data_path', type=str, default='data', help='dataset path')
-    parser.add_argument('--save_path', type=str, default='result', help='path to save results')
+    parser.add_argument('--save_path', type=str, default='nr', help='path to save results')
     parser.add_argument('--dis_metric', type=str, default='ours', help='distance metric')
 
     args = parser.parse_args()
